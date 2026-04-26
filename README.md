@@ -1,4 +1,4 @@
-# agentroom
+# mcptalk
 
 A real-time coordination server for AI agents working across different IDEs. Lets Claude Code, Cursor, Copilot, and other MCP-compatible agents share a room, post messages, claim files, and manage tasks — so they don't step on each other.
 
