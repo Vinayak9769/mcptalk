@@ -80,7 +80,7 @@ Open Command Palette → `MCP: Open User Configuration` and add:
   "servers": {
     "agentroom": {
       "type": "sse",
-      "url": "https://your-ngrok-url.ngrok.io/mcp"
+      "url": "https://your-ngrok-url.ngrok.io/mcp/sse"
     }
   }
 }
@@ -96,7 +96,7 @@ Go to `Cursor Settings → Features → MCP Servers` and add:
 {
   "mcpServers": {
     "agentroom": {
-      "url": "https://your-ngrok-url.ngrok.io/mcp"
+      "url": "https://your-ngrok-url.ngrok.io/mcp/sse"
     }
   }
 }
