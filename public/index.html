@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>agentroom event flow</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: #0b1020;
+        color: #e6e9f2;
+      }
+
+      .wrap {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.4rem;
+      }
+
+      p {
+        margin: 0 0 18px;
+        color: #a9b2c7;
+      }
+
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      input,
+      button {
+        border: 1px solid #2a3555;
+        background: #121a31;
+        color: #e6e9f2;
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+
+      input {
+        flex: 1;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .status {
+        margin-bottom: 14px;
+        font-size: 0.9rem;
+        color: #8fb3ff;
+      }
+
+      .feed {
+        background: #111830;
+        border: 1px solid #26314f;
+        border-radius: 10px;
+        max-height: 65vh;
+        overflow: auto;
+      }
+
+      .row {
+        padding: 10px 12px;
+        border-bottom: 1px solid #1e2946;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.85rem;
+      }
+
+      .row:last-child {
+        border-bottom: 0;
+      }
+
+      .evt {
+        color: #9fd8ff;
+        margin-right: 8px;
+      }
+
+      .time {
+        color: #7f8fb4;
+        margin-right: 10px;
+      }
+
+      .payload {
+        color: #d9e4ff;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>agentroom • message flow</h1>
+      <p>Live stream of Socket.IO events emitted by MCP tool handlers.</p>
+
+      <div class="controls">
+        <input id="roomId" placeholder="roomId to subscribe" />
+        <button id="joinBtn" type="button">Join room</button>
+        <button id="clearBtn" type="button">Clear</button>
+      </div>
+
+      <div class="status" id="status">Connecting…</div>
+      <section class="feed" id="feed" aria-live="polite"></section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const statusEl = document.getElementById("status");
+      const feedEl = document.getElementById("feed");
+      const roomIdInput = document.getElementById("roomId");
+      const joinBtn = document.getElementById("joinBtn");
+      const clearBtn = document.getElementById("clearBtn");
+
+      const socket = io();
+
+      function addEvent(eventName, payload) {
+        const row = document.createElement("div");
+        row.className = "row";
+
+        const time = new Date().toLocaleTimeString();
+        row.innerHTML = `
+          <span class="time">${time}</span>
+          <span class="evt">${eventName}</span>
+          <span class="payload">${JSON.stringify(payload)}</span>
+        `;
+
+        feedEl.prepend(row);
+      }
+
+      socket.on("connect", () => {
+        statusEl.textContent = `Connected (${socket.id})`;
+        addEvent("connect", { socketId: socket.id });
+      });
+
+      socket.on("disconnect", (reason) => {
+        statusEl.textContent = `Disconnected: ${reason}`;
+        addEvent("disconnect", { reason });
+      });
+
+      const trackedEvents = [
+        "connected",
+        "joined_room",
+        "room_created",
+        "room_joined",
+        "message_posted",
+        "file_claimed",
+        "file_released",
+        "task_created",
+        "task_claimed",
+        "task_completed"
+      ];
+
+      trackedEvents.forEach((eventName) => {
+        socket.on(eventName, (payload) => addEvent(eventName, payload));
+      });
+
+      joinBtn.addEventListener("click", () => {
+        const roomId = roomIdInput.value.trim();
+        if (!roomId) return;
+        socket.emit("join_room", roomId);
+        addEvent("join_room (client)", { roomId });
+      });
+
+      clearBtn.addEventListener("click", () => {
+        feedEl.innerHTML = "";
+      });
+    </script>
+  </body>
+</html>

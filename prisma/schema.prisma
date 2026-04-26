@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id        String     @id @default(cuid())
+  name      String
+  createdAt DateTime   @default(now()) @map("created_at")
+  messages  Message[]
+  fileClaims FileClaim[]
+  tasks     Task[]
+
+  @@map("rooms")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  roomId    String   @map("room_id")
+  agentName String   @map("agent_name")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@map("messages")
+}
+
+model FileClaim {
+  id            String   @id @default(cuid())
+  roomId        String   @map("room_id")
+  filePath      String   @map("file_path")
+  agentName     String   @map("agent_name")
+  claimedAt     DateTime @default(now()) @map("claimed_at")
+  lastHeartbeat DateTime @default(now()) @map("last_heartbeat")
+  room          Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@unique([roomId, filePath])
+  @@map("file_claims")
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  roomId    String   @map("room_id")
+  title     String
+  status    String   @default("open")
+  claimedBy String?  @map("claimed_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@map("tasks")
+}
