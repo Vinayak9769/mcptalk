@@ -32,6 +32,14 @@ export type TaskRecord = {
   createdAt: Date;
 };
 
+export type DecisionRecord = {
+  id: string;
+  roomId: string;
+  agentName: string;
+  decision: string;
+  createdAt: Date;
+};
+
 export async function createRoom(name: string): Promise<RoomRecord> {
   return prisma.room.create({ data: { name } });
 }
@@ -205,6 +213,21 @@ export async function completeTask(taskId: string): Promise<TaskRecord> {
 
 export async function getTasks(roomId: string): Promise<TaskRecord[]> {
   return prisma.task.findMany({
+    where: { roomId },
+    orderBy: { createdAt: "asc" }
+  });
+}
+
+export async function createDecision(input: {
+  roomId: string;
+  agentName: string;
+  decision: string;
+}): Promise<DecisionRecord> {
+  return prisma.decision.create({ data: input });
+}
+
+export async function getDecisions(roomId: string): Promise<DecisionRecord[]> {
+  return prisma.decision.findMany({
     where: { roomId },
     orderBy: { createdAt: "asc" }
   });

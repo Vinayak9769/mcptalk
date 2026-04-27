@@ -14,8 +14,21 @@ model Room {
   messages  Message[]
   fileClaims FileClaim[]
   tasks     Task[]
+  decisions Decision[]
 
   @@map("rooms")
+}
+
+model Decision {
+  id        String   @id @default(cuid())
+  roomId    String   @map("room_id")
+  agentName String   @map("agent_name")
+  decision  String
+  createdAt DateTime @default(now()) @map("created_at")
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@map("decisions")
 }
 
 model Message {
